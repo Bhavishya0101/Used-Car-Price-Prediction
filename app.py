@@ -1,9 +1,6 @@
 import streamlit as st
 import pandas as pd
 import os
-import zipfile
-from PIL import Image
-from io import BytesIO
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
@@ -129,39 +126,25 @@ car_age = 2025 - year
 # ======================================
 # CAR IMAGE 
 # ======================================
-ZIP_PATH = os.path.join(os.path.dirname(__file__), "car_images.zip")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-def load_image_from_zip(zip_path, image_name):
-    if not os.path.exists(zip_path):
-        return None
+def normalize_company(name):
+    return (
+        str(name)
+        .lower()
+        .strip()
+        .replace(" ", "_")
+        .replace("-", "_")
+    )
 
-    with zipfile.ZipFile(zip_path, "r") as zip_ref:
-        if image_name in zip_ref.namelist():
-            with zip_ref.open(image_name) as img_file:
-                return Image.open(BytesIO(img_file.read()))
-    return None
+image_file = f"{normalize_company(company)}.png"
+image_path = os.path.join(BASE_DIR, image_file)
 
-company_key = normalize_name(company)
-model_key = normalize_name(model_name)
+if os.path.exists(image_path):
+    st.image(image_path, width=300)
+else:
+    st.image(os.path.join(BASE_DIR, "default.png"), width=300)
 
-# Priority order:
-# 1. company_model.png
-# 2. company.png
-# 3. default.png
-image_candidates = [
-    f"{Company_key}_{Model_key}.png",
-    f"{Company_key}.png",
-    "default.png"
-]
-
-car_image = None
-for img_name in image_candidates:
-    car_image = load_image_from_zip(ZIP_PATH, img_name)
-    if car_image:
-        break
-
-if car_image:
-    st.image(car_image, width=300)
 
 
 # ======================================
@@ -181,6 +164,7 @@ input_df = pd.DataFrame([{
 if st.button("Predict Price"):
     price = model.predict(input_df)[0]
     st.success(f"💰 Estimated Used Car Price: ₹ {int(price):,}")
+
 
 
 
