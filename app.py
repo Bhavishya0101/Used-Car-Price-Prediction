@@ -126,11 +126,13 @@ car_age = 2025 - year
 # ======================================
 # CAR IMAGE
 # ======================================
-image_path = f"car_images/{company.lower()}.png"
-if not os.path.exists(image_path):
-    image_path = "car_images/default.png"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+image_path = os.path.join(BASE_DIR, "car_images", f"{brand.lower()}.zip")
 
-st.image(image_path, width=280)
+if os.path.exists(image_path):
+    st.image(image_path, width=280)
+else:
+    st.image(os.path.join(BASE_DIR, "car_images", "default.png"), width=280)
 
 # ======================================
 # PREDICTION
@@ -149,3 +151,4 @@ input_df = pd.DataFrame([{
 if st.button("Predict Price"):
     price = model.predict(input_df)[0]
     st.success(f"💰 Estimated Used Car Price: ₹ {int(price):,}")
+
