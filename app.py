@@ -1,6 +1,9 @@
 import streamlit as st
 import pandas as pd
 import os
+import zipfile
+from PIL import Image
+from io import BytesIO
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.compose import ColumnTransformer
@@ -124,15 +127,30 @@ km_driven = st.number_input("Kilometers Driven", 0, 500000, 50000)
 car_age = 2025 - year
 
 # ======================================
-# CAR IMAGE
+# CAR IMAGE (FROM ZIP FILE)
 # ======================================
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-image_path = os.path.join(BASE_DIR, "car_images", f"{Company.lower()}.zip")
+ZIP_PATH = os.path.join(os.path.dirname(__file__), "car_images.zip")
 
-if os.path.exists(image_path):
-    st.image(image_path, width=280)
+def load_image_from_zip(zip_path, image_name):
+    if not os.path.exists(zip_path):
+        return None
+
+    with zipfile.ZipFile(zip_path, "r") as zip_ref:
+        if image_name in zip_ref.namelist():
+            with zip_ref.open(image_name) as img_file:
+                return Image.open(BytesIO(img_file.read()))
+    return None
+
+brand_image_name = f"{company.lower()}.png"
+
+img = load_image_from_zip(ZIP_PATH, brand_image_name)
+
+if img:
+    st.image(img, width=280)
 else:
-    st.image(os.path.join(BASE_DIR, "car_images", "default.png"), width=280)
+    default_img = load_image_from_zip(ZIP_PATH, "default.png")
+    if default_img:
+        st.image(default_img, width=280)
 
 # ======================================
 # PREDICTION
@@ -151,5 +169,6 @@ input_df = pd.DataFrame([{
 if st.button("Predict Price"):
     price = model.predict(input_df)[0]
     st.success(f"💰 Estimated Used Car Price: ₹ {int(price):,}")
+
 
 
