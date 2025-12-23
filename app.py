@@ -8,9 +8,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.ensemble import RandomForestRegressor
 
-# ======================================
 # PAGE CONFIG
-# ======================================
 st.set_page_config(
     page_title="Used Car Price Prediction",
     layout="centered"
@@ -22,14 +20,11 @@ st.write(
     "and dealers make informed decisions."
 )
 
-# ======================================
+
 # LOAD & CLEAN DATA
-# ======================================
 @st.cache_data
 def load_and_clean_data():
     df = pd.read_csv("usedCars.csv")
-
-    # -------- Convert Price (Lakhs → Numeric) --------
     def convert_price(val):
         if isinstance(val, str):
             val = val.lower().replace(",", "").strip()
@@ -48,9 +43,7 @@ def load_and_clean_data():
 
 df = load_and_clean_data()
 
-# ======================================
-# FEATURES & TARGET (MATCH DATASET)
-# ======================================
+# FEATURES & TARGET 
 TARGET = "Price"
 
 FEATURES = [
@@ -67,15 +60,10 @@ FEATURES = [
 X = df[FEATURES]
 y = df[TARGET]
 
-# ======================================
 # COLUMN GROUPS
-# ======================================
 NUM_COLS = ["ModelYear", "Kilometer", "car_age"]
 CAT_COLS = ["Company", "FuelType", "TransmissionType", "Owner", "BodyStyle"]
-
-# ======================================
-# TRAIN MODEL (SAFE)
-# ======================================
+# TRAIN MODEL 
 @st.cache_resource
 def train_model(X, y):
 
@@ -106,10 +94,7 @@ def train_model(X, y):
     return model
 
 model = train_model(X, y)
-
-# ======================================
 # USER INPUT SECTION
-# ======================================
 st.header("🔮 Predict Used Car Price")
 
 company = st.selectbox("Company", sorted(df["Company"].unique()))
@@ -122,10 +107,7 @@ year = st.slider("Manufacturing Year", 2000, 2025, 2018)
 km_driven = st.number_input("Kilometers Driven", 0, 500000, 50000)
 
 car_age = 2025 - year
-
-# ======================================
 # CAR IMAGE 
-# ======================================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 def normalize_company(name):
@@ -145,11 +127,7 @@ if os.path.exists(image_path):
 else:
     st.image(os.path.join(BASE_DIR, "default.png"), width=300)
 
-
-
-# ======================================
 # PREDICTION
-# ======================================
 input_df = pd.DataFrame([{
     "Company": company,
     "FuelType": fuel,
@@ -164,6 +142,7 @@ input_df = pd.DataFrame([{
 if st.button("Predict Price"):
     price = model.predict(input_df)[0]
     st.success(f"💰 Estimated Used Car Price: ₹ {int(price):,}")
+
 
 
 
