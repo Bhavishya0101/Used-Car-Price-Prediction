@@ -127,7 +127,7 @@ km_driven = st.number_input("Kilometers Driven", 0, 500000, 50000)
 car_age = 2025 - year
 
 # ======================================
-# CAR IMAGE (FROM ZIP FILE)
+# CAR IMAGE 
 # ======================================
 ZIP_PATH = os.path.join(os.path.dirname(__file__), "car_images.zip")
 
@@ -141,16 +141,28 @@ def load_image_from_zip(zip_path, image_name):
                 return Image.open(BytesIO(img_file.read()))
     return None
 
-brand_image_name = f"{company.lower()}.png"
+company_key = normalize_name(company)
+model_key = normalize_name(model_name)
 
-img = load_image_from_zip(ZIP_PATH, brand_image_name)
+# Priority order:
+# 1. company_model.png
+# 2. company.png
+# 3. default.png
+image_candidates = [
+    f"{Company_key}_{Model_key}.png",
+    f"{Company_key}.png",
+    "default.png"
+]
 
-if img:
-    st.image(img, width=280)
-else:
-    default_img = load_image_from_zip(ZIP_PATH, "default.png")
-    if default_img:
-        st.image(default_img, width=280)
+car_image = None
+for img_name in image_candidates:
+    car_image = load_image_from_zip(ZIP_PATH, img_name)
+    if car_image:
+        break
+
+if car_image:
+    st.image(car_image, width=300)
+
 
 # ======================================
 # PREDICTION
@@ -169,6 +181,7 @@ input_df = pd.DataFrame([{
 if st.button("Predict Price"):
     price = model.predict(input_df)[0]
     st.success(f"💰 Estimated Used Car Price: ₹ {int(price):,}")
+
 
 
 
